@@ -112,6 +112,71 @@ a {{ color: {GLACIER} !important; }}
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1; pointer-events: none; overflow: hidden;
 }}
+
+/* ===== 极光 / 星云背景 ===== */
+.aurora {{
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; pointer-events: none; overflow: hidden;
+    opacity: 0.35;
+}}
+.aurora-layer {{
+    position: absolute; border-radius: 50%; filter: blur(80px);
+    mix-blend-mode: screen;
+}}
+.aurora-layer.a1 {{
+    width: 600px; height: 600px; top: -10%; left: -10%;
+    background: radial-gradient(circle, rgba(0,212,255,0.15), transparent 70%);
+    animation: auroraMove1 20s ease-in-out infinite;
+}}
+.aurora-layer.a2 {{
+    width: 500px; height: 500px; top: 40%; right: -15%;
+    background: radial-gradient(circle, rgba(139,92,246,0.12), transparent 70%);
+    animation: auroraMove2 25s ease-in-out infinite;
+}}
+.aurora-layer.a3 {{
+    width: 450px; height: 450px; bottom: -5%; left: 30%;
+    background: radial-gradient(circle, rgba(52,211,153,0.08), transparent 70%);
+    animation: auroraMove3 22s ease-in-out infinite;
+}}
+@keyframes auroraMove1 {{
+    0%,100% {{ transform: translate(0,0) scale(1); }}
+    33% {{ transform: translate(15vw,10vh) scale(1.2); }}
+    66% {{ transform: translate(-5vw,20vh) scale(0.9); }}
+}}
+@keyframes auroraMove2 {{
+    0%,100% {{ transform: translate(0,0) scale(1); }}
+    33% {{ transform: translate(-20vw,-8vh) scale(1.15); }}
+    66% {{ transform: translate(5vw,15vh) scale(0.85); }}
+}}
+@keyframes auroraMove3 {{
+    0%,100% {{ transform: translate(0,0) scale(1); }}
+    33% {{ transform: translate(10vw,-15vh) scale(1.1); }}
+    66% {{ transform: translate(-15vw,-5vh) scale(0.95); }}
+}}
+
+/* ===== 光环扫描线 ===== */
+.scanline {{
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; pointer-events: none; overflow: hidden;
+}}
+.scanline::after {{
+    content: ''; position: absolute; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.06), transparent);
+    animation: scanDown 8s linear infinite;
+}}
+@keyframes scanDown {{
+    0% {{ top: -2px; }}
+    100% {{ top: 100%; }}
+}}
+
+/* ===== 光标跟随光晕 ===== */
+.cursor-glow {{
+    position: fixed; width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,255,0.04) 0%, transparent 70%);
+    pointer-events: none; z-index: -1;
+    transform: translate(-50%, -50%);
+    transition: left 0.8s ease-out, top 0.8s ease-out;
+}}
 {STAR_CSS}
 {SHOOTING_STARS_CSS}
 
@@ -122,7 +187,7 @@ a {{ color: {GLACIER} !important; }}
     100% {{ background-position: 0% 50%; }}
 }}
 @keyframes typewriter {{
-    from {{ width: 0; }} to {{ width: 38ch; }}
+    from {{ width: 0; }} to {{ width: 30ch; }}
 }}
 @keyframes blink {{
     0%,100% {{ border-color: {GLACIER}; }}
@@ -393,10 +458,24 @@ a {{ color: {GLACIER} !important; }}
     background: {CARD_BG}; border: 1px solid rgba(0,212,255,0.10);
     border-radius: 10px; padding: 1rem; text-align: center;
     animation: fadeUp 0.6s ease both;
-    transition: transform 0.2s, border-color 0.3s;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    position: relative; overflow: hidden;
 }}
 .stat-card:hover {{
-    transform: translateY(-3px); border-color: rgba(0,212,255,0.25);
+    transform: translateY(-4px); border-color: rgba(0,212,255,0.3);
+    box-shadow: 0 0 20px rgba(0,212,255,0.08), inset 0 0 20px rgba(0,212,255,0.03);
+}}
+.stat-card::after {{
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(0,212,255,0.05), transparent 30%);
+    animation: cardRotate 6s linear infinite;
+    opacity: 0; transition: opacity 0.3s;
+}}
+.stat-card:hover::after {{ opacity: 1; }}
+@keyframes cardRotate {{
+    from {{ transform: rotate(0deg); }}
+    to {{ transform: rotate(360deg); }}
 }}
 .stat-num {{
     font-family: 'Inter', sans-serif; font-size: 1.8rem;
@@ -416,17 +495,25 @@ a {{ color: {GLACIER} !important; }}
     border-radius: 12px; padding: 1.3rem;
     position: relative; overflow: hidden;
     animation: fadeUp 0.7s ease both, borderGlow 4s ease infinite;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
 }}
 .glow-card:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,212,255,0.06);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,212,255,0.08), 0 0 40px rgba(0,212,255,0.04);
+    border-color: rgba(0,212,255,0.2);
 }}
+.glow-card::before {{
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(0,212,255,0.02), transparent 50%);
+    opacity: 0; transition: opacity 0.3s;
+}}
+.glow-card:hover::before {{ opacity: 1; }}
 .glow-card::after {{
     content: ''; position: absolute; top: 0; left: -100%;
     width: 60%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.03), transparent);
-    transition: left 0.6s ease;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.04), transparent);
+    transition: left 0.7s ease;
 }}
 .glow-card:hover::after {{ left: 120%; }}
 
@@ -568,13 +655,23 @@ a {{ color: {GLACIER} !important; }}
     border: 1px solid rgba(0,212,255,0.10);
     border-radius: 12px; overflow: hidden;
     animation: fadeUp 0.7s ease both;
-    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    transition: transform 0.3s, box-shadow 0.4s, border-color 0.3s;
+    position: relative;
 }}
 .project-card:hover {{
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0,212,255,0.08);
-    border-color: rgba(0,212,255,0.25);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,212,255,0.1), 0 0 60px rgba(139,92,246,0.05);
+    border-color: rgba(0,212,255,0.3);
 }}
+.project-card::before {{
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, {GLACIER}, {ACCENT_PURPLE}, {GLACIER});
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease infinite;
+    opacity: 0; transition: opacity 0.3s;
+}}
+.project-card:hover::before {{ opacity: 1; }}
 .project-card-body {{
     padding: 1.2rem;
 }}
@@ -659,10 +756,13 @@ a {{ color: {GLACIER} !important; }}
     border: 1px solid rgba(0,212,255,0.06);
     border-radius: 8px;
     animation: fadeUp 0.4s ease both;
-    transition: border-color 0.2s;
+    transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+    position: relative; overflow: hidden;
 }}
 .guestbook-entry:hover {{
-    border-color: rgba(0,212,255,0.15);
+    border-color: rgba(0,212,255,0.2);
+    box-shadow: 0 0 15px rgba(0,212,255,0.04);
+    transform: translateX(4px);
 }}
 .guestbook-name {{ color: {GLACIER_LIGHT}; font-weight: 600; font-size: 0.85rem; }}
 .guestbook-time {{ color: #546178; font-size: 0.7rem; margin-left: 0.5rem; }}
@@ -793,7 +893,18 @@ _qdot_icons += _qdot_svg("emit", 75, 75, "green", 1.5)
 st.markdown(
     f'<div class="starfield">{_stars}{_shooting}</div>'
     f'<div class="constellation">{_constellation_html}</div>'
-    f'{_qdot_icons}',
+    f'{_qdot_icons}'
+    f'<div class="aurora">'
+    f'<div class="aurora-layer a1"></div>'
+    f'<div class="aurora-layer a2"></div>'
+    f'<div class="aurora-layer a3"></div>'
+    f'</div>'
+    f'<div class="scanline"></div>'
+    f'<div class="cursor-glow" id="cursorGlow"></div>'
+    f'<script>'
+    f'const g=document.getElementById("cursorGlow");'
+    f'document.addEventListener("mousemove",e=>{{g.style.left=e.clientX+"px";g.style.top=e.clientY+"px";}});'
+    f'</script>',
     unsafe_allow_html=True,
 )
 
@@ -863,7 +974,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.markdown(
-    '<div class="hero-sub">AI Agent Developer &amp; Explorer // 构建智能体未来</div>',
+    '<div class="hero-sub">AI Agent Developer &amp; Explorer</div>',
     unsafe_allow_html=True,
 )
 st.markdown(
