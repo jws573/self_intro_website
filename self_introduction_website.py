@@ -35,8 +35,9 @@ ACCENT_PINK   = "#F472B6"
 # ============================================================
 #  CSS
 # ============================================================
+_STAR_COLORS = ['#FFF8DC', '#FFFACD', '#FFFDE7', '#FFF9C4', '#FFF']
 STAR_CSS = "\n".join(
-    f".s{i}{{position:absolute;border-radius:50%;background:#fff;"
+    f".s{i}{{position:absolute;border-radius:50%;background:{random.choice(_STAR_COLORS)};"
     f"width:{random.choice([1, 1, 2, 2, 3])}px;"
     f"height:{random.choice([1, 1, 2, 2, 3])}px;"
     f"top:{random.uniform(0, 100):.1f}%;left:{random.uniform(0, 100):.1f}%;"
@@ -1261,7 +1262,7 @@ COMMANDS = {
         "  contact   — Contact info\n"
         "  hire      — Why hire me?\n"
         "  ed        — Education\n"
-        "  joke      — A programmer joke\n"
+        "  inspire   — A motivational quote\n"
         "  date      — Current time\n"
         "  clear     — Clear terminal\n"
     ),
@@ -1306,14 +1307,12 @@ COMMANDS = {
         "  Enrolled: 2025\n"
         "  Core: ML, DL, NLP, CV, Data Structures"
     ),
-    "joke": lambda: random.choice([
-        "Why do programmers prefer dark mode? Because light attracts bugs.",
-        "A SQL query walks into a bar, sees two tables and asks: 'Can I JOIN you?'",
-        "Why do Java developers wear glasses? Because they don't C#.",
-        "There are only 10 types of people: those who understand binary and those who don't.",
-        "!false — it's funny because it's true.",
-        "A programmer's wife: 'Buy a loaf of bread. If they have eggs, buy a dozen.' He comes home with 12 loaves.",
-    ]),
+    "inspire": (
+        "技术日新月异，但勤奋永恒。\n"
+        "好奇为灯，毅力为杖，\n"
+        "在知识与实践海洋里探索未知，\n"
+        "你的人生刚刚开始！！！"
+    ),
     "date": lambda: datetime.now().strftime("  Server time: %Y-%m-%d %H:%M:%S CST"),
 }
 
