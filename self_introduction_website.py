@@ -74,6 +74,17 @@ MAIN_CSS = f"""
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ===== 全局 ===== */
+html {{
+    scroll-behavior: smooth;
+}}
+::-webkit-scrollbar {{ width: 6px; }}
+::-webkit-scrollbar-track {{ background: {DEEP_BG}; }}
+::-webkit-scrollbar-thumb {{
+    background: linear-gradient(180deg, {GLACIER_DIM}, {ACCENT_PURPLE});
+    border-radius: 3px;
+}}
+::-webkit-scrollbar-thumb:hover {{ background: {GLACIER}; }}
+
 .stApp {{
     background: {DEEP_BG} !important;
     background-image:
@@ -81,14 +92,19 @@ MAIN_CSS = f"""
         radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.02) 0%, transparent 60%) !important;
 }}
 section[data-testid="stSidebar"] {{
-    background: linear-gradient(180deg, #080E1A 0%, #0D1B2A 100%) !important;
-    border-right: 1px solid rgba(0,212,255,0.08) !important;
+    background: rgba(8,14,26,0.75) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(0,212,255,0.12) !important;
 }}
 section[data-testid="stSidebar"] .stMarkdown {{
     color: {TEXT_SECONDARY} !important;
 }}
 header[data-testid="stHeader"] {{
-    background: transparent !important; backdrop-filter: blur(8px);
+    background: rgba(6,11,24,0.7) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid rgba(0,212,255,0.06) !important;
 }}
 .block-container {{
     padding-top: 0.5rem !important;
@@ -97,6 +113,62 @@ header[data-testid="stHeader"] {{
 }}
 .stMarkdown {{ color: {TEXT_PRIMARY}; }}
 a {{ color: {GLACIER} !important; }}
+
+/* ===== Loading Screen ===== */
+.loading-screen {{
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: {DEEP_BG}; z-index: 99999;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}}
+.loading-screen.hide {{
+    opacity: 0; visibility: hidden; pointer-events: none;
+}}
+.loading-logo {{
+    font-family: 'Inter', sans-serif; font-size: 1.5rem;
+    font-weight: 800; margin-bottom: 2rem;
+    background: linear-gradient(135deg, {GLACIER_LIGHT}, {ACCENT_PURPLE});
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}}
+.loading-bar {{
+    width: 200px; height: 2px; background: rgba(0,212,255,0.1);
+    border-radius: 1px; overflow: hidden;
+}}
+.loading-bar-inner {{
+    width: 0; height: 100%;
+    background: linear-gradient(90deg, {GLACIER}, {ACCENT_PURPLE});
+    border-radius: 1px;
+    animation: loadProgress 1.8s ease-out forwards;
+}}
+@keyframes loadProgress {{
+    0% {{ width: 0; }}
+    30% {{ width: 45%; }}
+    60% {{ width: 75%; }}
+    90% {{ width: 95%; }}
+    100% {{ width: 100%; }}
+}}
+.loading-text {{
+    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+    color: {TEXT_SECONDARY}; margin-top: 1rem;
+}}
+
+/* ===== 滚动显示动画 ===== */
+.reveal {{
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}}
+.reveal.visible {{
+    opacity: 1; transform: translateY(0);
+}}
+.reveal-left {{
+    opacity: 0; transform: translateX(-40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}}
+.reveal-left.visible {{
+    opacity: 1; transform: translateX(0);
+}}
 
 /* ===== 星空 ===== */
 @keyframes twinkle {{
@@ -318,6 +390,26 @@ a {{ color: {GLACIER} !important; }}
     font-size: 2rem; font-weight: 700; color: #fff;
     border: 2px solid rgba(0,212,255,0.3);
     animation: glowPulse 3s ease infinite;
+    position: relative;
+    transform-style: preserve-3d;
+}}
+.sidebar-avatar::before {{
+    content: ''; position: absolute;
+    width: 96px; height: 96px; border-radius: 50%;
+    border: 1.5px solid transparent;
+    border-top-color: {GLACIER}; border-right-color: {ACCENT_PURPLE};
+    animation: avatarRing 4s linear infinite;
+}}
+.sidebar-avatar::after {{
+    content: ''; position: absolute;
+    width: 106px; height: 106px; border-radius: 50%;
+    border: 1px solid transparent;
+    border-bottom-color: rgba(0,212,255,0.2); border-left-color: rgba(139,92,246,0.2);
+    animation: avatarRing 6s linear infinite reverse;
+}}
+@keyframes avatarRing {{
+    from {{ transform: rotateZ(0deg); }}
+    to {{ transform: rotateZ(360deg); }}
 }}
 .sidebar-name {{
     font-family: 'Inter', sans-serif; font-size: 1.1rem;
@@ -424,6 +516,28 @@ a {{ color: {GLACIER} !important; }}
     background: {ACCENT_GREEN}; animation: pulseRing 2s ease infinite;
 }}
 
+/* ===== 向下滚动指示 ===== */
+.scroll-indicator {{
+    text-align: center; margin-top: 2.5rem;
+    animation: fadeUp 1s ease 4.5s both;
+}}
+.scroll-arrow {{
+    display: inline-block; width: 24px; height: 24px;
+    border-right: 2px solid rgba(0,212,255,0.4);
+    border-bottom: 2px solid rgba(0,212,255,0.4);
+    transform: rotate(45deg);
+    animation: bounceArrow 2s ease-in-out infinite;
+}}
+@keyframes bounceArrow {{
+    0%,100% {{ transform: rotate(45deg) translateY(0); opacity: 0.4; }}
+    50% {{ transform: rotate(45deg) translateY(8px); opacity: 1; }}
+}}
+.scroll-text {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; color: rgba(0,212,255,0.3);
+    margin-top: 0.6rem; letter-spacing: 0.15em;
+}}
+
 /* ===== 分割线 ===== */
 .divider {{
     height: 1px; width: 100%; margin: 1.5rem 0;
@@ -455,11 +569,12 @@ a {{ color: {GLACIER} !important; }}
     margin: 1rem 0;
 }}
 .stat-card {{
-    background: {CARD_BG}; border: 1px solid rgba(0,212,255,0.10);
+    background: rgba(13,27,42,0.6); border: 1px solid rgba(0,212,255,0.10);
     border-radius: 10px; padding: 1rem; text-align: center;
     animation: fadeUp 0.6s ease both;
     transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
     position: relative; overflow: hidden;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }}
 .stat-card:hover {{
     transform: translateY(-4px); border-color: rgba(0,212,255,0.3);
@@ -490,7 +605,8 @@ a {{ color: {GLACIER} !important; }}
 
 /* ===== 卡片 ===== */
 .glow-card {{
-    background: {CARD_BG};
+    background: rgba(13,27,42,0.55);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(0,212,255,0.10);
     border-radius: 12px; padding: 1.3rem;
     position: relative; overflow: hidden;
@@ -519,7 +635,8 @@ a {{ color: {GLACIER} !important; }}
 
 /* ===== 终端 ===== */
 .terminal {{
-    background: {TERMINAL_BG};
+    background: rgba(10,15,26,0.7);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(0,212,255,0.15);
     border-radius: 10px; overflow: hidden;
     margin: 0.8rem 0; animation: fadeUp 0.8s ease both;
@@ -651,7 +768,8 @@ a {{ color: {GLACIER} !important; }}
 
 /* ===== 项目卡片 ===== */
 .project-card {{
-    background: {CARD_BG};
+    background: rgba(13,27,42,0.55);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(0,212,255,0.10);
     border-radius: 12px; overflow: hidden;
     animation: fadeUp 0.7s ease both;
@@ -725,7 +843,8 @@ a {{ color: {GLACIER} !important; }}
 
 /* ===== 交互终端 ===== */
 .interactive-terminal {{
-    background: {TERMINAL_BG};
+    background: rgba(10,15,26,0.65);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(0,212,255,0.15);
     border-radius: 12px; overflow: hidden;
     margin: 0.8rem 0;
@@ -770,7 +889,9 @@ a {{ color: {GLACIER} !important; }}
 
 /* ===== 编辑面板 ===== */
 .edit-panel {{
-    background: {CARD_BG}; border: 1px solid rgba(0,212,255,0.12);
+    background: rgba(13,27,42,0.5);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0,212,255,0.12);
     border-radius: 12px; padding: 1.2rem; margin: 0.8rem 0;
 }}
 .edit-panel-title {{
@@ -812,11 +933,35 @@ a {{ color: {GLACIER} !important; }}
 @media (max-width: 768px) {{
     .stats-row {{ grid-template-columns: repeat(2, 1fr); }}
     .hero-title {{ font-size: 2.2rem; }}
+    .aurora-layer {{ filter: blur(50px); }}
+    .aurora-layer.a1 {{ width: 300px; height: 300px; }}
+    .aurora-layer.a2 {{ width: 250px; height: 250px; }}
+    .aurora-layer.a3 {{ width: 200px; height: 200px; }}
+    .qdot-icon {{ display: none; }}
+    .cursor-glow {{ display: none; }}
+    .constellation {{ opacity: 0.5; }}
 }}
 </style>
 """
 
 st.markdown(MAIN_CSS, unsafe_allow_html=True)
+
+# ============================================================
+#  Loading Screen
+# ============================================================
+st.markdown(
+    '<div class="loading-screen" id="loadingScreen">'
+    '<div class="loading-logo">S J W</div>'
+    '<div class="loading-bar"><div class="loading-bar-inner"></div></div>'
+    '<div class="loading-text">initializing portfolio...</div>'
+    '</div>'
+    '<script>'
+    'window.addEventListener("load",()=>{'
+    'setTimeout(()=>{document.getElementById("loadingScreen").classList.add("hide");'
+    '},2000);});'
+    '</script>',
+    unsafe_allow_html=True,
+)
 
 # ============================================================
 #  星空背景 + 流星 + 星座 + 量子点光图标
@@ -991,22 +1136,29 @@ st.markdown(
     '</div>',
     unsafe_allow_html=True,
 )
+st.markdown(
+    '<div class="scroll-indicator">'
+    '<div class="scroll-arrow"></div>'
+    '<div class="scroll-text">SCROLL</div>'
+    '</div>',
+    unsafe_allow_html=True,
+)
 
 # ============================================================
 #  数据统计卡片
 # ============================================================
 st.markdown(
     '<div class="stats-row">'
-    '<div class="stat-card" style="animation-delay:0.1s">'
+    '<div class="stat-card reveal" style="animation-delay:0.1s">'
     '<div class="stat-num">1</div>'
     '<div class="stat-label">Production Project</div></div>'
-    '<div class="stat-card" style="animation-delay:0.2s">'
+    '<div class="stat-card reveal" style="animation-delay:0.2s">'
     '<div class="stat-num">5+</div>'
     '<div class="stat-label">Core Technologies</div></div>'
-    '<div class="stat-card" style="animation-delay:0.3s">'
+    '<div class="stat-card reveal" style="animation-delay:0.3s">'
     '<div class="stat-num">211</div>'
     '<div class="stat-label">University Tier</div></div>'
-    '<div class="stat-card" style="animation-delay:0.4s">'
+    '<div class="stat-card reveal" style="animation-delay:0.4s">'
     '<div class="stat-num">∞</div>'
     '<div class="stat-label">Curiosity</div></div>'
     '</div>',
@@ -1021,7 +1173,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 if st.session_state.get("show_editor", False):
     st.markdown('<a id="edit"></a>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-hdr">'
+        '<div class="section-hdr reveal">'
         '<span class="num">E</span> EDIT PROFILE'
         '<span class="line"></span></div>',
         unsafe_allow_html=True,
@@ -1089,7 +1241,7 @@ _p = lambda key, default: st.session_state.get(key, default)
 # ============================================================
 st.markdown('<a id="about"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">01</span> ABOUT'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1123,7 +1275,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 # ============================================================
 st.markdown('<a id="experience"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">02</span> EXPERIENCE &amp; HIGHLIGHTS'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1176,7 +1328,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 # ============================================================
 st.markdown('<a id="projects"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">03</span> PROJECTS'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1184,7 +1336,7 @@ st.markdown(
 
 # 项目1 — 主项目
 st.markdown(
-    '<div class="project-card" style="animation-delay:0.1s">'
+    '<div class="project-card reveal" style="animation-delay:0.1s">'
     '<div class="project-card-body">'
     '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem">'
     '<div style="font-size:1.1rem;font-weight:700;color:#7EE8FA">Coding Assistant Agent</div>'
@@ -1251,7 +1403,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 # ============================================================
 st.markdown('<a id="skills"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">04</span> SKILLS'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1320,7 +1472,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 # ============================================================
 st.markdown('<a id="education"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">05</span> EDUCATION'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1352,7 +1504,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 # ============================================================
 st.markdown('<a id="terminal"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">06</span> INTERACTIVE TERMINAL'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1488,7 +1640,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 # ============================================================
 st.markdown('<a id="guestbook"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">07</span> GUESTBOOK'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1562,7 +1714,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 # ============================================================
 st.markdown('<a id="contact"></a>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="section-hdr">'
+    '<div class="section-hdr reveal">'
     '<span class="num">08</span> CONTACT'
     '<span class="line"></span></div>',
     unsafe_allow_html=True,
@@ -1628,6 +1780,13 @@ st.markdown(
     '</div>'
     '<div style="color:#3D5A6E;font-size:0.65rem;margin-top:0.6rem">'
     '/* Built with Streamlit | Sun Jiewei &copy; 2025 */'
-    '</div></div>',
+    '</div></div>'
+    '<script>'
+    'const observer=new IntersectionObserver((entries)=>{'
+    'entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add("visible");'
+    'observer.unobserve(e.target);}});'
+    '},{threshold:0.1,rootMargin:"0px 0px -40px 0px"});'
+    'document.querySelectorAll(".reveal,.reveal-left").forEach(el=>observer.observe(el));'
+    '</script>',
     unsafe_allow_html=True,
 )
