@@ -120,10 +120,11 @@ a {{ color: {GLACIER} !important; }}
     background: {DEEP_BG}; z-index: 99999;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
+    animation: loadingFade 2.8s ease forwards;
 }}
-.loading-screen.hide {{
-    opacity: 0; visibility: hidden; pointer-events: none;
+@keyframes loadingFade {{
+    0%,70% {{ opacity: 1; visibility: visible; pointer-events: auto; }}
+    100% {{ opacity: 0; visibility: hidden; pointer-events: none; }}
 }}
 .loading-logo {{
     font-family: 'Inter', sans-serif; font-size: 1.5rem;
@@ -140,7 +141,7 @@ a {{ color: {GLACIER} !important; }}
     width: 0; height: 100%;
     background: linear-gradient(90deg, {GLACIER}, {ACCENT_PURPLE});
     border-radius: 1px;
-    animation: loadProgress 1.8s ease-out forwards;
+    animation: loadProgress 2s ease-out forwards;
 }}
 @keyframes loadProgress {{
     0% {{ width: 0; }}
@@ -950,16 +951,11 @@ st.markdown(MAIN_CSS, unsafe_allow_html=True)
 #  Loading Screen
 # ============================================================
 st.markdown(
-    '<div class="loading-screen" id="loadingScreen">'
+    '<div class="loading-screen">'
     '<div class="loading-logo">S J W</div>'
     '<div class="loading-bar"><div class="loading-bar-inner"></div></div>'
     '<div class="loading-text">initializing portfolio...</div>'
-    '</div>'
-    '<script>'
-    'window.addEventListener("load",()=>{'
-    'setTimeout(()=>{document.getElementById("loadingScreen").classList.add("hide");'
-    '},2000);});'
-    '</script>',
+    '</div>',
     unsafe_allow_html=True,
 )
 
