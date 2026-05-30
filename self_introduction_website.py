@@ -2,6 +2,7 @@ import streamlit as st
 import random
 import json
 import os
+import math
 from datetime import datetime
 
 # ============================================================
@@ -41,7 +42,8 @@ STAR_CSS = "\n".join(
     f"top:{random.uniform(0, 100):.1f}%;left:{random.uniform(0, 100):.1f}%;"
     f"opacity:{random.uniform(0.15, 0.85):.2f};"
     f"animation:twinkle {random.uniform(2, 6):.1f}s ease-in-out "
-    f"{random.uniform(0, 4):.1f}s infinite}}"
+    f"{random.uniform(0, 4):.1f}s infinite"
+    f"{', drift ' + f'{random.uniform(15, 40):.0f}s ease-in-out ' + f'{random.uniform(0, 10):.1f}s infinite' if random.random() < 0.3 else ''}}}"
     for i in range(180)
 )
 
@@ -164,6 +166,80 @@ a {{ color: {GLACIER} !important; }}
     0%,100% {{ box-shadow: 0 0 5px rgba(0,212,255,0.15); }}
     50% {{ box-shadow: 0 0 20px rgba(0,212,255,0.25); }}
 }}
+@keyframes drift {{
+    0% {{ transform: translate(0, 0); }}
+    25% {{ transform: translate(15px, -10px); }}
+    50% {{ transform: translate(-8px, 12px); }}
+    75% {{ transform: translate(12px, 8px); }}
+    100% {{ transform: translate(0, 0); }}
+}}
+@keyframes constellationMove {{
+    0% {{ transform: translate(0, 0) rotate(0deg); }}
+    25% {{ transform: translate(20px, -15px) rotate(2deg); }}
+    50% {{ transform: translate(-10px, 18px) rotate(-1deg); }}
+    75% {{ transform: translate(15px, 10px) rotate(1.5deg); }}
+    100% {{ transform: translate(0, 0) rotate(0deg); }}
+}}
+@keyframes constellationTwinkle {{
+    0%,100% {{ opacity:0.7; filter:blur(0px); }}
+    50% {{ opacity:1; filter:blur(0.5px); box-shadow:0 0 8px 3px rgba(0,212,255,0.6); }}
+}}
+@keyframes qdotPulse {{
+    0%,100% {{ r:2; opacity:0.6; }}
+    50% {{ r:3.5; opacity:1; }}
+}}
+@keyframes iconFloat {{
+    0%,100% {{ transform:translateY(0); }}
+    50% {{ transform:translateY(-8px); }}
+}}
+@keyframes lineGlow {{
+    0%,100% {{ stroke-dashoffset:0; opacity:0.4; }}
+    50% {{ stroke-dashoffset:10; opacity:0.8; }}
+}}
+
+/* ===== 星座连线 ===== */
+.constellation {{
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    z-index:-1; pointer-events:none; overflow:hidden;
+    animation: constellationMove 25s ease-in-out infinite;
+}}
+.constellation-star {{
+    position:absolute; width:4px; height:4px; border-radius:50%;
+    background:#fff; animation: constellationTwinkle 3s ease-in-out infinite;
+}}
+.constellation-star.bright {{
+    width:5px; height:5px;
+    box-shadow: 0 0 6px 2px rgba(0,212,255,0.5);
+}}
+.constellation-line {{
+    position:absolute; height:1px;
+    background:linear-gradient(90deg, rgba(0,212,255,0.3), rgba(139,92,246,0.3));
+    transform-origin: 0 0;
+    animation: lineGlow 4s ease-in-out infinite;
+}}
+
+/* ===== 量子点光图标 ===== */
+.qdot-icon {{
+    position:fixed; z-index:-1; pointer-events:none;
+    animation: iconFloat 6s ease-in-out infinite;
+    opacity:0.5;
+}}
+.qdot-icon svg {{ overflow:visible; }}
+.qdot-icon circle {{
+    fill:{GLACIER};
+    animation: qdotPulse 2s ease-in-out infinite;
+}}
+.qdot-icon.purple circle {{ fill:{ACCENT_PURPLE}; }}
+.qdot-icon.green circle {{ fill:{ACCENT_GREEN}; }}
+
+/* ===== 留言板删除按钮 ===== */
+.guestbook-del {{
+    float:right; background:none; border:none; color:#546178;
+    font-size:0.72rem; cursor:pointer; padding:0.1rem 0.4rem;
+    border-radius:4px; font-family:'JetBrains Mono',monospace;
+    transition: all 0.2s;
+}}
+.guestbook-del:hover {{ color:#FF5370; background:rgba(255,83,112,0.1); }}
 
 /* ===== 侧边栏内容 ===== */
 .sidebar-profile {{
@@ -642,12 +718,81 @@ a {{ color: {GLACIER} !important; }}
 st.markdown(MAIN_CSS, unsafe_allow_html=True)
 
 # ============================================================
-#  星空背景 + 流星
+#  星空背景 + 流星 + 星座 + 量子点光图标
 # ============================================================
 _stars = "".join(f'<div class="s{i}"></div>' for i in range(180))
 _shooting = "".join(f'<div class="ss{i}"></div>' for i in range(12))
+
+# 7颗相连的星座星星 - 同频移动闪动
+# 使用相对坐标，整个星座会一起移动
+_constellation_stars = [
+    (12, 15), (18, 10), (25, 13), (22, 22),
+    (30, 18), (35, 12), (28, 8),
+]
+_constellation_html = ""
+for i, (left_pct, top_pct) in enumerate(_constellation_stars):
+    bright = " bright" if i in [1, 3, 5] else ""
+    delay = i * 0.4
+    _constellation_html += (
+        f'<div class="constellation-star{bright}" '
+        f'style="left:{left_pct}%;top:{top_pct}%;animation-delay:{delay}s"></div>'
+    )
+# 星座连线（连接相邻星星）
+_lines = [(0,1),(1,2),(2,3),(3,4),(4,5),(5,6),(6,1),(2,4),(3,6)]
+for a, b in _lines:
+    ax, ay = _constellation_stars[a]
+    bx, by = _constellation_stars[b]
+    dx = bx - ax
+    dy = by - ay
+    length = math.sqrt(dx**2 + dy**2)
+    angle = math.degrees(math.atan2(dy, dx))
+    _constellation_html += (
+        f'<div class="constellation-line" '
+        f'style="left:{ax}%;top:{ay}%;width:{length}%;'
+        f'transform:rotate({angle}deg);animation-delay:{a*0.3}s"></div>'
+    )
+
+# 量子点光图标 - 追逐光、成为光、散发光
+def _qdot_svg(icon_type, x, y, color_class="", anim_delay=0):
+    """生成由量子点（小圆点）构成的SVG图标"""
+    if icon_type == "chase":  # 追逐光 - 奔跑箭头
+        dots = [
+            (8,18),(12,14),(16,10),(20,6),(24,2),
+            (14,18),(18,14),(22,10),
+            (26,6),(30,2),(34, -2),
+            (10,10),(14,6),(18,2),
+        ]
+    elif icon_type == "become":  # 成为光 - 人形→星形
+        dots = [
+            (15,2),(15,8),(15,14),(10,10),(20,10),
+            (10,20),(20,20),(15,5),(12,3),(18,3),
+            (15,0),(13,1),(17,1),
+            (8,12),(22,12),
+        ]
+    else:  # emit - 散发光 - 圆形辐射
+        dots = [
+            (15,15),(15,5),(15,25),(5,15),(25,15),
+            (8,8),(22,8),(8,22),(22,22),
+            (15,10),(15,20),(10,15),(20,15),
+            (3,15),(27,15),(15,3),(15,27),
+        ]
+    circles = ""
+    for j, (cx, cy) in enumerate(dots):
+        delay = j * 0.15 + anim_delay
+        circles += f'<circle cx="{cx}" cy="{cy}" r="2.5" style="animation-delay:{delay}s"/>'
+    return (
+        f'<div class="qdot-icon {color_class}" style="left:{x}%;top:{y}%">'
+        f'<svg width="35" height="30" viewBox="0 0 30 30">{circles}</svg></div>'
+    )
+
+_qdot_icons = _qdot_svg("chase", 8, 30, "", 0)
+_qdot_icons += _qdot_svg("become", 88, 45, "purple", 0.8)
+_qdot_icons += _qdot_svg("emit", 75, 75, "green", 1.5)
+
 st.markdown(
-    f'<div class="starfield">{_stars}{_shooting}</div>',
+    f'<div class="starfield">{_stars}{_shooting}</div>'
+    f'<div class="constellation">{_constellation_html}</div>'
+    f'{_qdot_icons}',
     unsafe_allow_html=True,
 )
 
@@ -1284,13 +1429,21 @@ if gb_submit and gb_name.strip() and gb_msg.strip():
 
 st.markdown("<br>", unsafe_allow_html=True)
 for i, entry in enumerate(st.session_state.guestbook[:15]):
-    st.markdown(
-        f'<div class="guestbook-entry" style="animation-delay:{i * 0.04}s">'
-        f'<span class="guestbook-name">{entry["name"]}</span>'
-        f'<span class="guestbook-time">{entry["time"]}</span>'
-        f'<div class="guestbook-msg">{entry["msg"]}</div></div>',
-        unsafe_allow_html=True,
-    )
+    col_entry, col_del = st.columns([8, 1])
+    with col_entry:
+        st.markdown(
+            f'<div class="guestbook-entry" style="animation-delay:{i * 0.04}s">'
+            f'<span class="guestbook-name">{entry["name"]}</span>'
+            f'<span class="guestbook-time">{entry["time"]}</span>'
+            f'<div class="guestbook-msg">{entry["msg"]}</div></div>',
+            unsafe_allow_html=True,
+        )
+    with col_del:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("del", key=f"gb_del_{i}", help="Delete this message"):
+            st.session_state.guestbook.pop(i)
+            save_guestbook(st.session_state.guestbook)
+            st.rerun()
 
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
